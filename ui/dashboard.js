@@ -25,13 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadEmergencyData() {
     const storedData = sessionStorage.getItem('emergencyResponse');
 
+    console.log('[DEBUG] SessionStorage raw data:', storedData);
+
     if (storedData) {
         emergencyData = JSON.parse(storedData);
-        console.log('Loaded emergency data:', emergencyData);
+        console.log('[DEBUG] Loaded emergency data:', emergencyData);
+        console.log('[DEBUG] Has response?', !!emergencyData.response);
+        console.log('[DEBUG] Has unitLocation?', !!emergencyData.response?.unitLocation);
         populateIncidentDetails();
     } else {
         // Use demo data for testing
-        console.log('No emergency data found, using demo data');
+        console.warn('[DEBUG] No emergency data found in sessionStorage, using demo data');
         emergencyData = getDemoData();
         populateIncidentDetails();
     }
@@ -169,11 +173,18 @@ function initializeMap() {
     // Add incident marker
     addIncidentMarker(incidentLocation);
 
+    // Debug: Log emergency data structure
+    console.log('[DEBUG] Emergency Data:', emergencyData);
+    console.log('[DEBUG] Response Data:', emergencyData.response);
+    console.log('[DEBUG] Unit Location:', emergencyData.response?.unitLocation);
+
     // Add responder marker and route
     if (emergencyData.response && emergencyData.response.unitLocation) {
+        console.log('[DEBUG] Using response unit location');
         addResponderMarker(emergencyData.response.unitLocation);
         drawRoute(emergencyData.response.unitLocation, incidentLocation);
     } else {
+        console.warn('[DEBUG] No unit location in response, using fallback');
         // If no unit location in response, try to find it from centers data
         findAndDisplayNearestUnit();
     }

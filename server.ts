@@ -24,7 +24,7 @@ if (!GOOGLE_MAPS_APIKEY) {
 
 console.log("✓ Google Maps API Key loaded from .env");
 
-const PORT = 5000;
+const PORT = 5001;
 const UI_DIR = join(__dirname, "ui");
 
 serve({
@@ -32,6 +32,195 @@ serve({
   async fetch(req) {
     const url = new URL(req.url);
     let pathname = url.pathname;
+
+    // Handle /emergency endpoint - proxy to n8n webhook
+    if (pathname === "/emergency" && req.method === "POST") {
+      try {
+        const body = await req.json();
+
+        // n8n webhook URL
+        const N8N_WEBHOOK_URL = "https://quantumcoder27.app.n8n.cloud/webhook/877296c1-8f75-4255-90d2-aa32bba052ee";
+
+        // Forward request to n8n webhook
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        // Get response from n8n
+        const data = await response.json();
+
+        // Return n8n's response to the UI
+        return new Response(JSON.stringify(data), {
+          status: response.status,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+      } catch (error) {
+        console.error("Error proxying to n8n:", error);
+        return new Response(
+          JSON.stringify({ error: "Failed to connect to n8n webhook", details: String(error) }),
+          {
+            status: 500,
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+            },
+          }
+        );
+      }
+    }
+
+    // Handle CORS preflight for /calculate endpoint
+    if (pathname === "/calculate" && req.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    }
+
+    // Handle /calculate endpoint
+    if (pathname === "/calculate" && req.method === "POST") {
+      try {
+        const body = await req.json();
+        const { latitude, longitude, emergencyType } = body;
+
+        // Validate input
+        if (!latitude || !longitude || !emergencyType) {
+          return new Response(
+            JSON.stringify({ error: "Missing required fields: latitude, longitude, emergencyType" }),
+            {
+              status: 400,
+              headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+              },
+            }
+          );
+        }
+
+        // Map emergencyType to requestType for Python script
+        // "hospital" stays as "hospital", everything else stays the same
+        const requestType = emergencyType;
+
+        // Call Python script using Bun's spawn
+        const proc = Bun.spawn([
+          "python",
+          "GISanalyser.py"
+        ], {
+          stdin: "pipe",
+          stdout: "pipe",
+          stderr: "pipe",
+          env: { ...process.env },
+        });
+
+        // Create a modified Python script inline to pass arguments
+        const pythonCode = `
+import sys
+import json
+sys.path.insert(0, '${__dirname.replace(/\\/g, '\\\\')}')
+from GISanalyser import calculate_driving_distance
+
+result = calculate_driving_distance(${latitude}, ${longitude}, '${requestType}')
+print(result)
+`;
+
+        // Write Python code to stdin
+        proc.stdin.write(pythonCode);
+        proc.stdin.end();
+
+        // Read output
+        const output = await new Response(proc.stdout).text();
+        const stderr = await new Response(proc.stderr).text();
+
+        if (stderr) {
+          console.error("Python stderr:", stderr);
+        }
+
+        await proc.exited;
+
+        // Parse the JSON output from Python
+        const unitsData = JSON.parse(output.trim());
+
+        // Load EmergencyCenters.json to get unit coordinates
+        const emergencyCentersPath = join(__dirname, "EmergencyCenters.json");
+        const emergencyCenters = JSON.parse(readFileSync(emergencyCentersPath, "utf-8"));
+
+        // Find the nearest unit (minimum duration)
+        let nearestUnit = null;
+        let minDuration = Infinity;
+
+        for (const [unitName, unitInfo] of Object.entries(unitsData)) {
+          // Parse duration string (e.g., "5 mins" -> 5)
+          const durationStr = (unitInfo as any).duration;
+          const durationMatch = durationStr.match(/(\d+)/);
+          if (durationMatch) {
+            const durationMinutes = parseInt(durationMatch[1]);
+            if (durationMinutes < minDuration) {
+              minDuration = durationMinutes;
+              nearestUnit = {
+                name: unitName,
+                distance: (unitInfo as any).distance,
+                duration: durationStr,
+                location: emergencyCenters[requestType][unitName]
+              };
+            }
+          }
+        }
+
+        if (!nearestUnit) {
+          return new Response(
+            JSON.stringify({ error: "Could not find nearest unit" }),
+            {
+              status: 500,
+              headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+              },
+            }
+          );
+        }
+
+        // Format response as expected by n8n workflow
+        const response = {
+          emergencyType: emergencyType,
+          nearestUnit: nearestUnit.name,
+          distance: nearestUnit.distance,
+          eta: nearestUnit.duration,
+          unitLocation: nearestUnit.location,
+          incidentLocation: { lat: latitude, lng: longitude }
+        };
+
+        return new Response(JSON.stringify(response), {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+
+      } catch (error) {
+        console.error("Error in /calculate endpoint:", error);
+        return new Response(
+          JSON.stringify({ error: "Internal server error", details: String(error) }),
+          {
+            status: 500,
+            headers: {
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*",
+            },
+          }
+        );
+      }
+    }
 
     // Default to index.html for root path
     if (pathname === "/") {

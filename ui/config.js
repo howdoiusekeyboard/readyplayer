@@ -6,32 +6,34 @@
  */
 
 const WEBHOOK_URLS = {
-    // Fire Emergency Webhook
-    // Replace with actual n8n webhook URL after importing workflow
-    fire: 'https://quantumcoder27.app.n8n.cloud/webhook/877296c1-8f75-4255-90d2-aa32bba052ee',
+    // All emergency types use local proxy endpoint (no CORS issues)
+    // The Bun server at localhost:5001 proxies requests to n8n webhook
+    // emergencyType field in payload determines the type (fire, hospital, police)
+    fire: 'http://localhost:5001/emergency',
 
-    // Ambulance/Medical Emergency Webhook
-    // Replace with actual n8n webhook URL after importing workflow
-    ambulance: 'https://quantumcoder27.app.n8n.cloud/webhook/d53a9096-f144-4329-9699-301a93c86593',
+    // Same endpoint for all types
+    ambulance: 'http://localhost:5001/emergency',
 
-    // Police Emergency Webhook
-    // Replace with actual n8n webhook URL after importing workflow
-    police: 'https://quantumcoder27.app.n8n.cloud/webhook/0e722cb1-b963-495e-934e-f3150aeff6de'
+    // Single unified endpoint
+    police: 'http://localhost:5001/emergency'
 };
 
 /**
- * HOW TO GET WEBHOOK URLs:
+ * ARCHITECTURE:
  *
- * 1. Login to n8n cloud: https://nofps.app.n8n.cloud
- * 2. Import the workflow: My workflow (1).json
- * 3. Open each webhook node (FireEmergency, AmbulanceEmergency, PoliceEmergency)
- * 4. Copy the webhook URL (looks like: https://nofps.app.n8n.cloud/webhook/abc-123-xyz)
- * 5. Paste the URLs above, replacing the REPLACE_WITH_* placeholders
- * 6. Save this file
+ * UI (localhost:5001) → Bun Server /emergency endpoint → n8n webhook (cloud)
  *
- * ALTERNATIVE - Local n8n:
- * If using local n8n instead of cloud, URLs will look like:
- * http://localhost:5678/webhook/abc-123-xyz
+ * All emergency requests go through the local Bun server proxy to avoid CORS issues.
+ * The n8n webhook URL is configured in server.ts (N8N_WEBHOOK_URL constant).
+ *
+ * To update the n8n webhook URL:
+ * 1. Open server.ts
+ * 2. Find the N8N_WEBHOOK_URL constant in the /emergency endpoint
+ * 3. Update it with your n8n webhook URL
+ * 4. Restart the Bun server: bun run server.ts
+ *
+ * NOTE: All three emergency types use the SAME local endpoint.
+ * The emergencyType field in the POST payload determines which type it is.
  */
 
 // Google Maps API Configuration

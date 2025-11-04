@@ -4,13 +4,13 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const data = $json\n\nconst emergency = data.body.emergencyType\nconst latitude = data.body.latitude || \"unknown\";\nconst longitude = data.body.longitude || \"unknown\";\nconst loc = data.body.currentlocation\n\nconst jsonData = {\n      emergencyType: emergency,\n      location: { latitude, longitude , loc},\n      timestamp: new Date().toISOString()\n    }\n;\n\nreturn jsonData;"
+        "jsCode": "const data = $json\n\nconst emergency = data.emergencyType\nconst latitude = data.latitude || \"unknown\";\nconst longitude = data.longitude || \"unknown\";\nconst loc = data.currentlocation\n\nconst jsonData = {\n      emergencyType: emergency,\n      latitude: latitude,\n      longitude: longitude,\n      currentlocation: loc,\n      timestamp: new Date().toISOString()\n    }\n;\n\nreturn jsonData;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        416,
-        0
+        432,
+        48
       ],
       "id": "9ffac241-6120-4fff-8866-b3f0e39a8101",
       "name": "Code in JavaScript"
@@ -25,7 +25,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        224,
+        208,
         -144
       ],
       "id": "b42fa013-fafd-4200-a795-5138e8e0a21c",
@@ -43,7 +43,7 @@
       "typeVersion": 2.1,
       "position": [
         208,
-        0
+        48
       ],
       "id": "6649ab5a-7cf6-4456-86ed-16ac4b5b9e75",
       "name": "AmbulanceEmergency",
@@ -52,7 +52,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "=0e722cb1-b963-495e-934e-f3150aeff6de",
+        "path": "0e722cb1-b963-495e-934e-f3150aeff6de",
         "responseMode": "lastNode",
         "options": {}
       },
@@ -60,7 +60,7 @@
       "typeVersion": 2.1,
       "position": [
         208,
-        160
+        240
       ],
       "id": "84dd4bb0-2e01-449f-928d-c47166070067",
       "name": "PoliceEmergency",
@@ -68,30 +68,64 @@
     },
     {
       "parameters": {
-        "hasOutputParser": true,
-        "options": {}
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"incidentId\": \"={{ $now.toISOString() }}\",\n  \"emergencyType\": \"={{ $('Call GIS Calculator').item.json.emergencyType }}\",\n  \"nearestUnit\": \"={{ $('Call GIS Calculator').item.json.nearestUnit }}\",\n  \"distance\": \"={{ $('Call GIS Calculator').item.json.distance }}\",\n  \"eta\": \"={{ $('Call GIS Calculator').item.json.eta }}\",\n  \"unitLocation\": \"={{ $('Call GIS Calculator').item.json.unitLocation }}\",\n  \"incidentLocation\": \"={{ $('Call GIS Calculator').item.json.incidentLocation }}\"\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3,
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
       "position": [
-        720,
-        -96
+        880,
+        48
       ],
-      "id": "84e3cc4d-6281-4db6-a746-f8617eb68211",
-      "name": "AI Agent"
+      "id": "15f10487-c20d-4f57-9012-d74503800895",
+      "name": "Respond to Webhook"
     },
     {
       "parameters": {
-        "options": {}
+        "method": "POST",
+        "url": "https://deanna-wardless-hubbly.ngrok-free.dev/calculate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"latitude\": {{ $json.latitude }},\n  \"longitude\": {{ $json.longitude }},\n  \"emergencyType\": \"{{ $json.emergencyType }}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
       },
-      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
       "position": [
-        1136,
-        224
+        656,
+        48
       ],
-      "id": "cbc262cc-a660-49f3-9843-ba3491fa372a",
-      "name": "MCP Client"
+      "id": "1405136d-98cb-4eb6-834f-e7fbb5eb6422",
+      "name": "Call GIS Calculator"
     }
   ],
   "pinData": {},
@@ -129,22 +163,22 @@
         ]
       ]
     },
-    "MCP Client": {
-      "ai_tool": [
+    "Code in JavaScript": {
+      "main": [
         [
           {
-            "node": "AI Agent",
-            "type": "ai_tool",
+            "node": "Call GIS Calculator",
+            "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Call GIS Calculator": {
       "main": [
         [
           {
-            "node": "AI Agent",
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
@@ -152,11 +186,11 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a9373e4e-040e-472c-bb4f-ac0519e6b3b5",
+  "versionId": "92fdd8df-e1d7-42cd-8c85-67ff9910cf73",
   "meta": {
     "instanceId": "15155333c9db6902f50c5b5313379fdcc83a282c05093de40e61d95b5276ca73"
   },
