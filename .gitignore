@@ -144,6 +144,11 @@ ENV/
 env.bak/
 venv.bak/
 
+# Node.js / Bun
+node_modules/
+bun.lockb
+.bun/
+
 # Spyder project settings
 .spyderproject
 .spyproject

@@ -1,0 +1,26 @@
+{
+  "name": "flash-ai-emergency-response",
+  "version": "1.0.0",
+  "description": "AI-powered emergency response system with GIS analytics - Ready Player One Hackathon",
+  "main": "server.ts",
+  "scripts": {
+    "start": "bun run server.ts",
+    "dev": "bun run server.ts",
+    "serve": "bun run server.ts"
+  },
+  "keywords": [
+    "emergency-response",
+    "gis",
+    "n8n",
+    "langflow",
+    "ollama",
+    "hackathon"
+  ],
+  "author": "flash.ai Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}
