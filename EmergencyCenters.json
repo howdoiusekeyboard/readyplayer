@@ -1,0 +1,60 @@
+{
+  "police": {
+    "Bur Dubai Police Station": {
+      "lat": 25.2631,
+      "lng": 55.2972
+    },
+    "Naif Police Station": {
+      "lat": 25.2697,
+      "lng": 55.3089
+    },
+    "Al Muraqqabat Police Station": {
+      "lat": 25.2656,
+      "lng": 55.3125
+    },
+    "Al Rashidiya Police Station": {
+      "lat": 25.2216,
+      "lng": 55.3786
+    },
+    "Al Qusais Police Station": {
+      "lat": 25.2828,
+      "lng": 55.3864
+    }
+  },
+  "fire": {
+    "Al Karama Civil Defence Station": {
+      "lat": 25.2528,
+      "lng": 55.3061
+    },
+    "Al Rashidiya Civil Defence Station": {
+      "lat": 25.2200,
+      "lng": 55.3750
+    },
+    "Al Qusais Civil Defence Station": {
+      "lat": 25.2850,
+      "lng": 55.3850
+    },
+    "Jumeirah Civil Defence Station": {
+      "lat": 25.2322,
+      "lng": 55.2606
+    }
+  },
+  "hospital": {
+    "Rashid Hospital": {
+      "lat": 25.2378,
+      "lng": 55.3275
+    },
+    "Latifa Hospital": {
+      "lat": 25.2211,
+      "lng": 55.2686
+    },
+    "American Hospital Dubai": {
+      "lat": 25.1167,
+      "lng": 55.2006
+    },
+    "Mediclinic City Hospital": {
+      "lat": 25.2375,
+      "lng": 55.3333
+    }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data = $json\n\nconst emergency = data.body.emergencyType\nconst latitude = data.body.latitude || \"unknown\";\nconst longitude = data.body.longitude || \"unknown\";\nconst loc = data.body.currentlocation\n\nconst jsonData = {\n      emergencyType: emergency,\n      location: { latitude, longitude , loc},\n      timestamp: new Date().toISOString()\n    }\n;\n\nreturn jsonData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9ffac241-6120-4fff-8866-b3f0e39a8101",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "877296c1-8f75-4255-90d2-aa32bba052ee",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "b42fa013-fafd-4200-a795-5138e8e0a21c",
+      "name": "FireEmergency",
+      "webhookId": "877296c1-8f75-4255-90d2-aa32bba052ee"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "d53a9096-f144-4329-9699-301a93c86593",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6649ab5a-7cf6-4456-86ed-16ac4b5b9e75",
+      "name": "AmbulanceEmergency",
+      "webhookId": "d53a9096-f144-4329-9699-301a93c86593"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "=0e722cb1-b963-495e-934e-f3150aeff6de",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        160
+      ],
+      "id": "84dd4bb0-2e01-449f-928d-c47166070067",
+      "name": "PoliceEmergency",
+      "webhookId": "0e722cb1-b963-495e-934e-f3150aeff6de"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "84e3cc4d-6281-4db6-a746-f8617eb68211",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        1136,
+        224
+      ],
+      "id": "cbc262cc-a660-49f3-9843-ba3491fa372a",
+      "name": "MCP Client"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "FireEmergency": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AmbulanceEmergency": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PoliceEmergency": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a9373e4e-040e-472c-bb4f-ac0519e6b3b5",
+  "meta": {
+    "instanceId": "15155333c9db6902f50c5b5313379fdcc83a282c05093de40e61d95b5276ca73"
+  },
+  "id": "TV3ULdtPmbQCnI3u",
+  "tags": []
+}

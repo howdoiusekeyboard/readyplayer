@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flash.ai - Emergency Response System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="trigger-page">
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>flash.ai</h1>
+            </div>
+            <p class="tagline">AI-Powered Emergency Response</p>
+        </div>
+
+        <div class="emergency-section">
+            <h2>Report Emergency</h2>
+            <p class="instruction">Select emergency type to dispatch nearest responder</p>
+
+            <div class="emergency-buttons">
+                <button onclick="triggerEmergency('fire')" class="btn-emergency btn-fire" id="btn-fire">
+                    <span class="btn-icon">🔥</span>
+                    <span class="btn-text">FIRE EMERGENCY</span>
+                    <span class="btn-subtext">Civil Defence Response</span>
+                </button>
+
+                <button onclick="triggerEmergency('hospital')" class="btn-emergency btn-ambulance" id="btn-ambulance">
+                    <span class="btn-icon">🚑</span>
+                    <span class="btn-text">MEDICAL EMERGENCY</span>
+                    <span class="btn-subtext">Ambulance Dispatch</span>
+                </button>
+
+                <button onclick="triggerEmergency('police')" class="btn-emergency btn-police" id="btn-police">
+                    <span class="btn-icon">🚓</span>
+                    <span class="btn-text">POLICE EMERGENCY</span>
+                    <span class="btn-subtext">Law Enforcement Response</span>
+                </button>
+            </div>
+
+            <div id="location-info" class="location-info">
+                <span class="location-icon">📍</span>
+                <span id="location-text">Detecting your location...</span>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p class="loading-text">Analyzing emergency...</p>
+                    <p class="loading-subtext">Finding nearest responder using GIS optimization</p>
+                </div>
+            </div>
+
+            <!-- Response Message -->
+            <div id="response-message" class="response-message" style="display: none;">
+                <div class="response-icon">✓</div>
+                <h3 id="response-title">Emergency Dispatched</h3>
+                <p id="response-details"></p>
+                <button onclick="viewDashboard()" class="btn-dashboard">View Mission Control</button>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="error-message" style="display: none;">
+                <div class="error-icon">⚠</div>
+                <h3>Connection Error</h3>
+                <p id="error-details">Unable to reach emergency dispatch system</p>
+                <button onclick="resetForm()" class="btn-retry">Try Again</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Ready Player One Hackathon 2024 | Microsoft Tech Club & GDG</p>
+            <p class="tech-stack">Powered by n8n · Langflow · Ollama · Google Maps</p>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
